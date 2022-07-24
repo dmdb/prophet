@@ -5,7 +5,12 @@ const token = process.env.SLACK_TOKEN;
 const web = new WebClient(token);
 
 const sendPrediction = async (text: string, channel: string) => {
-  await web.chat.postMessage({ channel, text });
+  try {
+    await web.chat.postMessage({ channel, text });
+  } catch (e) {
+    console.error('Slack API error');
+    console.error(e);
+  }
 };
 
 export { sendPrediction };
