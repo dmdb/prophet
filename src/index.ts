@@ -1,12 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { param, query, validationResult } from 'express-validator';
+import { validationResult } from 'express-validator';
 import morgan from 'morgan';
-import scrape from './scrape';
-import prisma from './prisma';
-import { isLocked } from './lock';
 import getPrediction from './prediction';
+import { sendPrediction } from './slack';
 
 const app = express();
 
@@ -24,11 +22,13 @@ const validateErrors = (
 };
 
 const auth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (req.headers.authorization === `Bearer ${process.env.AUTH_SECRET}`) {
-    return next();
+  const { token } = req.body;
+
+  if (process.env.VERIFICATION_TOKEN && token !== process.env.VERIFICATION_TOKEN) {
+    return res.status(403).send();
   }
 
-  return res.status(403).send();
+  return next();
 };
 
 app.use(cors());
@@ -39,12 +39,18 @@ app.post('/prediction', validateErrors, async (req: express.Request, res) => {
   console.log(req.body);
   const prediction = await getPrediction();
 
-  console.log(prediction);
+  if (!prediction) {
+    return res.status(404).send('Prediction not found');
+  }
 
-  return res.status(200).send(prediction);
+  const { channel_id: channel } = req.body;
+
+  sendPrediction(prediction, channel);
+
+  return res.status(200).send();
 });
 
-// app.use(auth);
+app.use(auth);
 
 const port = Number(process.env.PORT) || 3000;
 app.listen(port);
