@@ -34,6 +34,7 @@ const auth = (req: express.Request, res: express.Response, next: express.NextFun
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
+app.use(auth);
 
 app.post('/prediction', validateErrors, async (req: express.Request, res) => {
   console.log(req.body);
@@ -50,7 +51,7 @@ app.post('/prediction', validateErrors, async (req: express.Request, res) => {
   return res.status(200).send();
 });
 
-app.use(auth);
+
 
 const port = Number(process.env.PORT) || 3000;
 app.listen(port);
