@@ -32,7 +32,7 @@ const auth = (req: express.Request, res: express.Response, next: express.NextFun
 };
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 app.post('/prediction', validateErrors, async (req: express.Request, res) => {
