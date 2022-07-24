@@ -35,7 +35,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(morgan('dev'));
 
-app.get('/prediction', validateErrors, async (req: express.Request, res) => {
+app.post('/prediction', validateErrors, async (req: express.Request, res) => {
   console.log(req);
   const prediction = await getPrediction();
 
