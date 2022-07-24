@@ -45,6 +45,7 @@ app.post('/prediction', validateErrors, async (req: express.Request, res) => {
 
   const { channel_id: channel } = req.body;
 
+  console.log(channel);
   sendPrediction(prediction, channel);
 
   return res.status(200).send();
