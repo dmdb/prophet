@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import scrape from './scrape';
 import prisma from './prisma';
 import { isLocked } from './lock';
+import getPrediction from './prediction';
 
 const app = express();
 
@@ -35,24 +36,12 @@ app.use(bodyParser.json());
 app.use(morgan('dev'));
 
 app.get('/prediction', validateErrors, async (req: express.Request, res) => {
-  const date = new Date();
-
-  if (isLocked()) {
-    return res.status(200).send('Scraping in progress');
-  }
-
-  const prediction = (await prisma.horoscope.findFirst({
-    select: { text: true },
-    where: {
-      day: date.getDate(),
-      month: date.getMonth(),
-      year: date.getFullYear(),
-    },
-  }))?.text || await scrape();
+  console.log(req);
+  const prediction = await getPrediction();
 
   console.log(prediction);
 
-  return res.status(200).send();
+  return res.status(200).send(prediction);
 });
 
 // app.use(auth);
