@@ -1,11 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { param, query, validationResult } from 'express-validator';
+import { validationResult } from 'express-validator';
 import morgan from 'morgan';
-import scrape from './scrape';
-import prisma from './prisma';
-import { isLocked } from './lock';
+import getPrediction from './prediction';
+import { sendPrediction } from './slack';
 
 const app = express();
 
@@ -23,39 +22,35 @@ const validateErrors = (
 };
 
 const auth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (req.headers.authorization === `Bearer ${process.env.AUTH_SECRET}`) {
-    return next();
+  const { token } = req.body;
+
+  if (process.env.VERIFICATION_TOKEN && token !== process.env.VERIFICATION_TOKEN) {
+    return res.status(403).send();
   }
 
-  return res.status(403).send();
+  return next();
 };
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-app.get('/prediction', validateErrors, async (req: express.Request, res) => {
-  const date = new Date();
+app.post('/prediction', validateErrors, async (req: express.Request, res) => {
+  console.log(req.body);
+  const prediction = await getPrediction();
 
-  if (isLocked()) {
-    return res.status(200).send('Scraping in progress');
+  if (!prediction) {
+    return res.status(404).send('Prediction not found');
   }
 
-  const prediction = (await prisma.horoscope.findFirst({
-    select: { text: true },
-    where: {
-      day: date.getDate(),
-      month: date.getMonth(),
-      year: date.getFullYear(),
-    },
-  }))?.text || await scrape();
+  const { channel_id: channel } = req.body;
 
-  console.log(prediction);
+  sendPrediction(prediction, channel);
 
   return res.status(200).send();
 });
 
-// app.use(auth);
+app.use(auth);
 
 const port = Number(process.env.PORT) || 3000;
 app.listen(port);
