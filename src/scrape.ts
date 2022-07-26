@@ -4,6 +4,7 @@ import { setLock } from './lock';
 
 const scrape = async () => {
   console.log('Doing scrape');
+  console.time('Scrape');
   setLock(true);
   let browser;
 
@@ -34,6 +35,7 @@ const scrape = async () => {
     return null;
   } finally {
     setLock(false);
+    console.timeEnd('Scrape');
     if (browser) {
       await browser.close();
     }
