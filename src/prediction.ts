@@ -36,5 +36,14 @@ const getPrediction = async (attempt = 1): Promise<string | null> => {
   return prediction;
 };
 
-export default getPrediction;
+const postPrediction = async (channel: string) => {
+  const prediction = await getPrediction();
+  if (!prediction) {
+    console.error('Prediction not found');
+    return;
+  }
 
+  postMessage(prediction, channel);
+};
+
+export { postPrediction, getPrediction };

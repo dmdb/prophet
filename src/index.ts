@@ -3,8 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { validationResult } from 'express-validator';
 import morgan from 'morgan';
-import getPrediction from './prediction';
-import { sendPrediction } from './slack';
+import { postPrediction } from './prediction';
 
 const app = express();
 
@@ -38,15 +37,9 @@ app.use(auth);
 
 app.post('/prediction', validateErrors, async (req: express.Request, res) => {
   console.log(req.body);
-  const prediction = await getPrediction();
-
-  if (!prediction) {
-    return res.status(404).send('Prediction not found');
-  }
-
   const { channel_id: channel } = req.body;
 
-  sendPrediction(prediction, channel);
+  postPrediction(channel);
 
   return res.status(200).send();
 });
