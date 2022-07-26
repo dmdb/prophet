@@ -4,7 +4,7 @@ const token = process.env.SLACK_TOKEN;
 
 const web = new WebClient(token);
 
-const postMessage = async (text: string, channel: string) => {
+const postMessageToChannel = async (text: string, channel: string) => {
   try {
     await web.chat.postMessage({ channel, text });
   } catch (e) {
@@ -13,4 +13,4 @@ const postMessage = async (text: string, channel: string) => {
   }
 };
 
-export { postMessage };
+export { postMessageToChannel };

@@ -1,6 +1,7 @@
 import { isLocked } from './lock';
 import prisma from './prisma';
 import scrape from './scrape';
+import { postMessageToChannel } from './slack';
 
 const RETRY_LIMIT = 20;
 const RETRY_INTERVAL = 2000;
@@ -43,7 +44,7 @@ const postPrediction = async (channel: string) => {
     return;
   }
 
-  postMessage(prediction, channel);
+  postMessageToChannel(prediction, channel);
 };
 
 export { postPrediction, getPrediction };
